@@ -1,0 +1,15 @@
+{
+  "name": "trackerua",
+  "version": "1.0.0",
+  "displayName": "tracker",
+  "description": "Tracker de Unity",
+  "keywords": [
+    "UAV",
+    "ucm"
+  ],
+  "author": {
+    "name": "Pablo",
+    "email": "pablma13@ucm.es",
+    "url": "https://www.youtube.com/watch?v=OhwP5TYgucM"
+  }
+}
