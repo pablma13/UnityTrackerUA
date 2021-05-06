@@ -134,7 +134,7 @@ public static class Tracker
     /// <param name="e"></param>
     private static void WriteToFile(Event e)
     {
-        _writer = new System.IO.StreamWriter(e.GetPath, true);
+        _writer = new System.IO.StreamWriter(Application.persistentDataPath + "/" + e.GetPath(), true);
         _writer.WriteLine(JsonUtility.ToJson(e));
         _writer.Close();
     }
@@ -187,7 +187,7 @@ public static class Tracker
     {
         // if the event is yet to initialize, we create a new one
         if (_deadEvent == null)
-            _deadEvent = new PickupEvent(playerID);
+            _deadEvent = new PlayerDiedEvent(playerID);
 
         // updates the internal data of the event
         _deadEvent.UpdateInfo(timestamp);
@@ -207,7 +207,7 @@ public static class Tracker
     {
         // if the event is yet to initialize, we create a new one
         if (_pointsEvent == null)
-            _pointsEvent = new PickupEvent(playerID);
+            _pointsEvent = new PointsEarnedEvent(playerID);
 
         // updates the internal data of the event
         _pointsEvent.UpdateInfo(timestamp);
