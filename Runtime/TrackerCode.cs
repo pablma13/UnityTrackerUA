@@ -230,8 +230,14 @@ public static class Tracker
             {
                 if (e._startSceneName == activeScene)
                 {
-                    openEvents.Remove(e);
                     eventsToWrite.Add(e);
+                }
+            }
+            foreach (Event e in eventsToWrite)
+            {
+                if(e is OpenEvent)
+                {
+                    openEvents.Remove((OpenEvent)e);
                 }
             }
             Thread.Sleep(10);
