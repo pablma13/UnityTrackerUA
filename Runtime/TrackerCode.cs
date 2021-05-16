@@ -222,10 +222,13 @@ public static class Tracker
     static private System.IO.StreamWriter _writer;
     #endregion
 
-    
+
 
     #region METHODS ------------------------------------------------------------------------------------------
+    
+    
 
+    #region THREAD MANAGEMENT --------------------------------------------------------------------------------
     /// </summary>
     /// Activate tracker's thread
     /// </summary>
@@ -304,21 +307,10 @@ public static class Tracker
 
         foreach (ExitEvent e in _exitEvents) WriteToFile(e);
     }
+    #endregion
 
 
-    /// <summary>
-    /// Internal method used to parse and write event info into a .json file
-    /// </summary>
-    /// <param name="e">Event we want to parse and write to a file</param>
-    private static void WriteToFile(Event e)
-    {
-        _writer = new System.IO.StreamWriter(Application.persistentDataPath + "/" + e.GetPath(), true);
-        _writer.WriteLine(JsonUtility.ToJson(e));
-        _writer.Close();
-    }
-
-
-
+    #region GENERIC EVENTS -----------------------------------------------------------------------------------
     /// <summary>
     /// Example of an Exit Event
     /// </summary>
@@ -355,8 +347,10 @@ public static class Tracker
         //Add the event to the list
         _openEvents.Add(e);
     }
+    #endregion
 
 
+    #region PROJECT-SPECIFIC EVENTS --------------------------------------------------------------------------
     /// <summary>
     /// Tracks the "Enemy Killed" event and parses the info to json
     /// </summary>
@@ -431,6 +425,19 @@ public static class Tracker
 
         // adds the event to the write list so the thread update writes them to a .json file
         _eventsToWrite.Add(_pointsEvent);
+    }
+    #endregion
+
+
+    /// <summary>
+    /// Internal method used to parse and write event info into a .json file
+    /// </summary>
+    /// <param name="e">Event we want to parse and write to a file</param>
+    private static void WriteToFile(Event e)
+    {
+        _writer = new System.IO.StreamWriter(Application.persistentDataPath + "/" + e.GetPath(), true);
+        _writer.WriteLine(JsonUtility.ToJson(e));
+        _writer.Close();
     }
     #endregion
 }
