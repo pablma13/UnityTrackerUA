@@ -2,13 +2,13 @@
   "name": "trackerua",
   "version": "1.0.0",
   "displayName": "tracker",
-  "description": "Tracker de Unity",
+  "description": "Tracker de Unity para la asignatura Usabilidad y An\u00e1lisis  de videosjuegos de la UCM",
   "keywords": [
     "UAV",
     "ucm"
   ],
   "author": {
-    "name": "Pablo",
+    "name": "Pablo & Len",
     "email": "pablma13@ucm.es",
     "url": "https://www.youtube.com/watch?v=OhwP5TYgucM"
   }
