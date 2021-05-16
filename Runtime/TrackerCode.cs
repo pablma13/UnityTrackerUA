@@ -198,11 +198,6 @@ class PointsEarnedEvent : Event
 public static class Tracker
 {
     #region ATTRIBUTES ---------------------------------------------------------------------------------------
-    // Project-spcific events
-    static private KillEvent _killEvent = null;
-    static private PickupEvent _pickupEvent = null;
-    static private PlayerDiedEvent _deadEvent = null;
-    static private PointsEarnedEvent _pointsEvent = null;
 
     // Automatic event management
     static List<Event> _eventsToWrite = new List<Event>();
@@ -356,8 +351,7 @@ public static class Tracker
     /// <param name="deadPlayerID">ID of the player that was killed</param>
     public static void EnemyKill(float timestamp, int playerID, int deadPlayerID) {
         // if the event is yet to initialize, we create a new one
-        if (_killEvent == null)
-            _killEvent = new KillEvent(playerID);
+        KillEvent _killEvent = new KillEvent(playerID);
 
         // updates the internal data of the event
         _killEvent.UpdateInfo(timestamp, deadPlayerID);
@@ -375,8 +369,7 @@ public static class Tracker
     public static void Pickup(float timestamp, int playerID)
     {
         // if the event is yet to initialize, we create a new one
-        if (_pickupEvent == null)
-            _pickupEvent = new PickupEvent(playerID);
+        PickupEvent _pickupEvent = new PickupEvent(playerID);
 
         // updates the internal data of the event
         _pickupEvent.UpdateInfo(timestamp);
@@ -394,8 +387,7 @@ public static class Tracker
     public static void PlayerDied(float timestamp, int playerID)
     {
         // if the event is yet to initialize, we create a new one
-        if (_deadEvent == null)
-            _deadEvent = new PlayerDiedEvent(playerID);
+        PlayerDiedEvent _deadEvent = new PlayerDiedEvent(playerID);
 
         // updates the internal data of the event
         _deadEvent.UpdateInfo(timestamp);
@@ -414,11 +406,10 @@ public static class Tracker
     public static void PointsEarned(float timestamp, int playerID, int points)
     {
         // if the event is yet to initialize, we create a new one
-        if (_pointsEvent == null)
-            _pointsEvent = new PointsEarnedEvent(playerID);
+        PointsEarnedEvent _pointsEvent = new PointsEarnedEvent(playerID);
 
         // updates the internal data of the event
-        _pointsEvent.UpdateInfo(timestamp);
+        _pointsEvent.UpdateInfo(timestamp, points);
 
         // adds the event to the write list so the thread update writes them to a .json file
         _eventsToWrite.Add(_pointsEvent);
