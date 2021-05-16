@@ -47,12 +47,10 @@ class Event
 /// </summary>
 class ExitEvent : Event
 {
-    public ExitEvent() { }
-
-    public ExitEvent(int playerID)
+    public ExitEvent()
     {
         _path = "ExitEvent.json";
-        Init(playerID);
+        Init(0);
     }
 
 }
@@ -63,13 +61,10 @@ class ExitEvent : Event
 class OpenEvent : Event
 {
     public string _startSceneName;
-
-    public OpenEvent() { }
-
-    public OpenEvent(int playerID)
+    public OpenEvent()
     {
         _path = "OpenEvent.json";
-        Init(playerID);
+        Init(0);
     }
 }
 
@@ -217,6 +212,7 @@ public static class Tracker
 
     static private string _activeScene = null;
     static private string _dataPath = null;
+    static private float _time;
 
     static private bool _exit = false;
     static private System.IO.StreamWriter _writer;
@@ -253,6 +249,7 @@ public static class Tracker
             {
                 if (e._startSceneName == _activeScene)
                 {
+                    e._timestamp = _time;
                     _eventsToWrite.Add(e);
                 }
             }
@@ -280,7 +277,7 @@ public static class Tracker
     public static void Update()
     {
         _activeScene = SceneManager.GetActiveScene().name;
-
+        _time = Time.time;
         foreach (AutomaticEvent e in _automaticEvents)
         {
             e.Update();
@@ -301,7 +298,11 @@ public static class Tracker
     {
         _exit = true;
 
-        foreach (ExitEvent e in _exitEvents) WriteToFile(e);
+        foreach (ExitEvent e in _exitEvents)
+        {
+            e._timestamp = _time;
+            WriteToFile(e);
+        }
     }
     #endregion
 
@@ -312,13 +313,13 @@ public static class Tracker
     /// </summary>
     /// <param name="timestamp">Time in seconds from the beginning of the session</param>
     /// <param name="playerID">ID of the player</param>   
-    public static void ExitEventExample(float timestamp, int playerID)
+    public static void ExitEventExample()
     {
         //Create a new event
-        ExitEvent e = new ExitEvent(playerID);
+        ExitEvent e = new ExitEvent();
 
         // updates the internal data of the event
-        e.UpdateInfo(timestamp);
+        e.UpdateInfo(0);
 
         //Add the event to the list
         _exitEvents.Add(e);
@@ -331,13 +332,13 @@ public static class Tracker
     /// <param name="timestamp">Time in seconds from the beginning of the session</param>
     /// <param name="playerID">ID of the player</param>
     /// <param name="sceneName">Name of the scene we are opening</param>
-    public static void OpenEventExample(float timestamp, int playerID, string sceneName)
+    public static void OpenEventExample(string sceneName)
     {
         //Create a new event
-        OpenEvent e = new OpenEvent(playerID);
+        OpenEvent e = new OpenEvent();
 
         // updates the internal data of the event
-        e.UpdateInfo(timestamp);
+        e.UpdateInfo(0);
         e._startSceneName = sceneName;
 
         //Add the event to the list
