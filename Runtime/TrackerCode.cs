@@ -40,8 +40,10 @@ class Event
     }
 }
 
+#region GENERIC EVENTS ---------------------------------------------------------------------------------------
+
 /// <summary>
-/// Base class for all the tracker exit events.
+/// Derived class that tracks exit events.
 /// </summary>
 class ExitEvent : Event
 {
@@ -56,7 +58,7 @@ class ExitEvent : Event
 }
 
 /// <summary>
-/// Base class for all the tracker open events.
+/// Derived class that tracks open events.
 /// </summary>
 class OpenEvent : Event
 {
@@ -70,14 +72,20 @@ class OpenEvent : Event
     }
 }
 
+#endregion
+
+#region AUTOMATIC EVENTS -------------------------------------------------------------------------------------
 /// <summary>
 /// Base class for all the tracker automatic events.
 /// </summary>
 class AutomaticEvent : Event
 {
-    public bool timeToWrite = false;
+    public bool _writePending = false;
+
     public AutomaticEvent() { }
+
     public virtual void Update() { }
+
     public AutomaticEvent(int playerID)
     {
         _path = "AutomaticEvent.json";
@@ -86,19 +94,23 @@ class AutomaticEvent : Event
 }
 
 /// <summary>
-/// Example of the work of an automatic event
+/// Example of the work of an automatic event that tracks when the x position
+/// of a tracked object goes outside a given range
 /// </summary>
 class AutomaticEventExample : AutomaticEvent
 {
     private string _followedName;
     private int _maxPosX = 300;
     public Vector3 _pos;
+
     public AutomaticEventExample() { }
+
     public override void Update() 
     {
         _pos = GameObject.Find(_followedName).GetComponent<Transform>().position;
-        timeToWrite = _pos.x > _maxPosX;
+        _writePending = _pos.x > _maxPosX;
     }
+
     public AutomaticEventExample(int playerID)
     {
         _path = "AutomaticEvent.json";
@@ -110,6 +122,9 @@ class AutomaticEventExample : AutomaticEvent
         _followedName = followedName;
     }
 }
+#endregion
+
+#region PROJECT-SPECIFIC EVENTS ------------------------------------------------------------------------------
 /// <summary>
 /// Derived class that provides information about a killed enemy event
 /// </summary>
@@ -176,68 +191,72 @@ class PointsEarnedEvent : Event
         _points = points;
     }
 }
-
 #endregion
-    #region TRACKER ----------------------------------------------------------------------------------------------
+#endregion
+
+#region TRACKER ----------------------------------------------------------------------------------------------
 
 /// <summary>
-/// Tracker class. Deals with the event creation and their parsing to json
+/// Tracker class. Deals with the event creation, management and parsing to json
 /// </summary>
 public static class Tracker
 {
-    #region ATTRIBUTES
+    #region ATTRIBUTES ---------------------------------------------------------------------------------------
+    // Project-spcific events
     static private KillEvent _killEvent = null;
     static private PickupEvent _pickupEvent = null;
     static private PlayerDiedEvent _deadEvent = null;
     static private PointsEarnedEvent _pointsEvent = null;
-    static private string activeScene = null;
-    static private string dataPath = null;
 
-    static private bool exit = false;
+    // Automatic event management
+    static List<Event> _eventsToWrite = new List<Event>();
+    static List<OpenEvent> _openEvents = new List<OpenEvent>();
+    static List<ExitEvent> _exitEvents = new List<ExitEvent>();
+    static List<AutomaticEvent> _automaticEvents = new List<AutomaticEvent>();
+
+    static private string _activeScene = null;
+    static private string _dataPath = null;
+
+    static private bool _exit = false;
     static private System.IO.StreamWriter _writer;
-
-    //Not necessary if the event is instantaneous
-    static List<Event> eventsToWrite = new List<Event>();
-    static List<OpenEvent> openEvents = new List<OpenEvent>();
-    static List<ExitEvent> exitEvents = new List<ExitEvent>();
-    static List<AutomaticEvent> automaticEvents = new List<AutomaticEvent>();
     #endregion
 
-    public static void Update()
-    {
-        activeScene = SceneManager.GetActiveScene().name;
-        foreach (AutomaticEvent e in automaticEvents)
-        {
-            e.Update();
-            if (e.timeToWrite) eventsToWrite.Add(e);
-        }
-        foreach (Event e in eventsToWrite)
-        {
-            WriteToFile(e);
-        }
-        eventsToWrite.Clear();
-    }
+    
+
+    #region METHODS ------------------------------------------------------------------------------------------
+
     /// </summary>
-    //Update the active tracker's thread
+    /// Activate tracker's thread
+    /// </summary>
+    public static void Init()
+    {
+        _dataPath = Application.persistentDataPath;
+        Thread t = new Thread(new ThreadStart(ThreadUpdate));
+        t.Start();
+    }
+
+
+    /// </summary>
+    /// Update the active tracker's thread
     /// </summary>
     private static void ThreadUpdate()
     {
         //Check scenes
-        while (!exit)
+        while (!_exit)
         {
             //Open events tracking
-            foreach (OpenEvent e in openEvents)
+            foreach (OpenEvent e in _openEvents)
             {
-                if (e._startSceneName == activeScene)
+                if (e._startSceneName == _activeScene)
                 {
-                    eventsToWrite.Add(e);
+                    _eventsToWrite.Add(e);
                 }
             }
-            foreach (Event e in eventsToWrite)
+            foreach (Event e in _eventsToWrite)
             {
-                if(e is OpenEvent)
+                if (e is OpenEvent)
                 {
-                    openEvents.Remove((OpenEvent)e);
+                    _openEvents.Remove((OpenEvent)e);
                 }
             }
             Thread.Sleep(10);
@@ -245,31 +264,50 @@ public static class Tracker
         //Exit events tracking
     }
 
+
+    /// <summary>
+    /// Goes through the list of automatic events and, if they're pending write,
+    /// writes their info to file. Also clears the list of events to write.
     /// </summary>
-    //Activate tracker's thread
-    /// </summary>
-    public static void init()
+    public static void Update()
     {
-        dataPath = Application.persistentDataPath;
-        Thread t = new Thread(new ThreadStart(ThreadUpdate));
-        t.Start();
+        _activeScene = SceneManager.GetActiveScene().name;
+
+        foreach (AutomaticEvent e in _automaticEvents)
+        {
+            e.Update();
+
+            if (e._writePending)
+            {
+                _eventsToWrite.Add(e);
+                e._writePending = false;
+            }
+        }
+
+        foreach (Event e in _eventsToWrite)
+        {
+            WriteToFile(e);
+        }
+
+        _eventsToWrite.Clear();
     }
 
+
     /// </summary>
-    //Finish tracker's thread process
+    /// Finish tracker's thread process and write exit events
     /// </summary>
     public static void Exit()
     {
-        exit = true;
+        _exit = true;
 
-        foreach (ExitEvent e in exitEvents) WriteToFile(e);
+        foreach (ExitEvent e in _exitEvents) WriteToFile(e);
     }
 
-    #region METHODS
+
     /// <summary>
     /// Internal method used to parse and write event info into a .json file
     /// </summary>
-    /// <param name="e"></param>
+    /// <param name="e">Event we want to parse and write to a file</param>
     private static void WriteToFile(Event e)
     {
         _writer = new System.IO.StreamWriter(Application.persistentDataPath + "/" + e.GetPath(), true);
@@ -277,11 +315,13 @@ public static class Tracker
         _writer.Close();
     }
 
+
+
     /// <summary>
-    /// Example of an ExitEvent
+    /// Example of an Exit Event
     /// </summary>
     /// <param name="timestamp">Time in seconds from the beginning of the session</param>
-    /// <param name="playerID">ID of the player that performed the kill</param>
+    /// <param name="playerID">ID of the player</param>   
     public static void ExitEventExample(float timestamp, int playerID)
     {
         //Create a new event
@@ -291,14 +331,16 @@ public static class Tracker
         e.UpdateInfo(timestamp);
 
         //Add the event to the list
-        exitEvents.Add(e);
+        _exitEvents.Add(e);
     }
+
 
     /// <summary>
     /// Example of an OpenEvent
     /// </summary>
     /// <param name="timestamp">Time in seconds from the beginning of the session</param>
-    /// <param name="playerID">ID of the player that performed the kill</param>
+    /// <param name="playerID">ID of the player</param>
+    /// <param name="sceneName">Name of the scene we are opening</param>
     public static void OpenEventExample(float timestamp, int playerID, string sceneName)
     {
         //Create a new event
@@ -309,8 +351,9 @@ public static class Tracker
         e._startSceneName = sceneName;
 
         //Add the event to the list
-        openEvents.Add(e);
+        _openEvents.Add(e);
     }
+
 
     /// <summary>
     /// Tracks the "Enemy Killed" event and parses the info to json
@@ -329,6 +372,7 @@ public static class Tracker
         // parses the event to json and writes it in a .json file
         WriteToFile(_killEvent);
     }
+
 
     /// <summary>
     /// Tracks the "Pickup" event and parses the info to json
