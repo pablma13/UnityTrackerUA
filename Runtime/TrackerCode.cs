@@ -258,11 +258,14 @@ public static class Tracker
             }
             foreach (Event e in _eventsToWrite)
             {
+                WriteToFile(e);
+
                 if (e is OpenEvent)
                 {
                     _openEvents.Remove((OpenEvent)e);
                 }
             }
+            _eventsToWrite.Clear();
             Thread.Sleep(10);
         }
         //Exit events tracking
@@ -288,13 +291,6 @@ public static class Tracker
                 e._writePending = false;
             }
         }
-
-        foreach (Event e in _eventsToWrite)
-        {
-            WriteToFile(e);
-        }
-
-        _eventsToWrite.Clear();
     }
 
 
@@ -435,7 +431,7 @@ public static class Tracker
     /// <param name="e">Event we want to parse and write to a file</param>
     private static void WriteToFile(Event e)
     {
-        _writer = new System.IO.StreamWriter(Application.persistentDataPath + "/" + e.GetPath(), true);
+        _writer = new System.IO.StreamWriter(_dataPath + "/" + e.GetPath(), true);
         _writer.WriteLine(JsonUtility.ToJson(e));
         _writer.Close();
     }
