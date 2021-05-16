@@ -63,6 +63,7 @@ class ExitEvent : Event
 class OpenEvent : Event
 {
     public string _startSceneName;
+
     public OpenEvent() { }
 
     public OpenEvent(int playerID)
@@ -267,7 +268,8 @@ public static class Tracker
 
     /// <summary>
     /// Goes through the list of automatic events and, if they're pending write,
-    /// writes their info to file. Also clears the list of events to write.
+    /// adds them to the write list. This write list contains both automatic and 
+    /// regular events.
     /// </summary>
     public static void Update()
     {
@@ -369,8 +371,8 @@ public static class Tracker
         // updates the internal data of the event
         _killEvent.UpdateInfo(timestamp, deadPlayerID);
 
-        // parses the event to json and writes it in a .json file
-        WriteToFile(_killEvent);
+        // adds the event to the write list so the thread update writes them to a .json file
+        _eventsToWrite.Add(_killEvent);
     }
 
 
@@ -388,8 +390,8 @@ public static class Tracker
         // updates the internal data of the event
         _pickupEvent.UpdateInfo(timestamp);
 
-        // parses the event to json and writes it in a .json file
-        WriteToFile(_pickupEvent);
+        // adds the event to the write list so the thread update writes them to a .json file
+        _eventsToWrite.Add(_pickupEvent);
     }
 
 
@@ -407,8 +409,8 @@ public static class Tracker
         // updates the internal data of the event
         _deadEvent.UpdateInfo(timestamp);
 
-        // parses the event to json and writes it in a .json file
-        WriteToFile(_deadEvent);
+        // adds the event to the write list so the thread update writes them to a .json file
+        _eventsToWrite.Add(_deadEvent);
     }
 
 
@@ -427,10 +429,10 @@ public static class Tracker
         // updates the internal data of the event
         _pointsEvent.UpdateInfo(timestamp);
 
-        // parses the event to json and writes it in a .json file
-        WriteToFile(_pointsEvent);
+        // adds the event to the write list so the thread update writes them to a .json file
+        _eventsToWrite.Add(_pointsEvent);
     }
     #endregion
 }
 
-#endregion--------
+#endregion
