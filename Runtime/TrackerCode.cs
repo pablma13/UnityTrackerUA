@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Threading;
-
+/*
 #region EVENT CLASSES ----------------------------------------------------------------------------------------
 
 /// <summary>
@@ -189,7 +189,7 @@ class PointsEarnedEvent : Event
 }
 #endregion
 #endregion
-
+*/
 #region TRACKER ----------------------------------------------------------------------------------------------
 
 /// <summary>
@@ -200,13 +200,13 @@ public static class Tracker
     #region ATTRIBUTES ---------------------------------------------------------------------------------------
 
     // Automatic event management
-    static List<Event> _eventsToWrite = new List<Event>();
+    static List<TrackerEvent> _eventsToWrite = new List<TrackerEvent>();
     static List<OpenEvent> _openEvents = new List<OpenEvent>();
     static List<ExitEvent> _exitEvents = new List<ExitEvent>();
     static List<AutomaticEvent> _automaticEvents = new List<AutomaticEvent>();
 
     static private string _activeScene = null;
-    static private string _dataPath = null;
+    static public string _dataPath = null;
     static private float _time;
 
     static private bool _exit = false;
@@ -248,9 +248,9 @@ public static class Tracker
                     _eventsToWrite.Add(e);
                 }
             }
-            foreach (Event e in _eventsToWrite)
+            foreach (TrackerEvent e in _eventsToWrite)
             {
-                WriteToFile(e);
+                Writer.WriteToFile(e);
 
                 if (e is OpenEvent)
                 {
@@ -296,7 +296,7 @@ public static class Tracker
         foreach (ExitEvent e in _exitEvents)
         {
             e._timestamp = _time;
-            WriteToFile(e);
+            Writer.WriteToFile(e);
         }
     }
     #endregion
@@ -421,12 +421,12 @@ public static class Tracker
     /// Internal method used to parse and write event info into a .json file
     /// </summary>
     /// <param name="e">Event we want to parse and write to a file</param>
-    private static void WriteToFile(Event e)
+    /*private static void WriteToFile(Event e)
     {
         _writer = new System.IO.StreamWriter(_dataPath + "/" + e.GetPath(), true);
         _writer.WriteLine(JsonUtility.ToJson(e));
         _writer.Close();
-    }
+    }*/
     #endregion
 }
 
