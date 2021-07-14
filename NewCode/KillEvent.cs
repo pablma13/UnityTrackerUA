@@ -7,15 +7,17 @@ class KillEvent : TrackerEvent
 {
     public int _deadPlayerID;
 
-    public KillEvent(int playerID)
+    public KillEvent()
     {
         _path = "KillerEvents.json";
-        Init(playerID);
+        _timestamp = Tracker.Instance.knowTime();
+        _deadPlayerID = Tracker.Instance._enemyID;
+        Init(Tracker.Instance._playerID);
     }
-
+    /*
     public void UpdateInfo(float timestamp, int deadPlayerID) 
     {
         _timestamp = timestamp;
         _deadPlayerID = deadPlayerID;
-    }
+    }*/
 }

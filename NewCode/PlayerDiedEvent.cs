@@ -5,9 +5,9 @@ using UnityEngine;
 /// </summary>
 class PlayerDiedEvent : TrackerEvent
 {
-    public PlayerDiedEvent(int playerID)
+    public PlayerDiedEvent()
     {
         _path = "PlayerDiedEvent.json";
-        Init(playerID);
+        Init(Tracker.Instance._playerID);
     }
 }

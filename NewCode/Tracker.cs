@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading;
@@ -33,14 +34,15 @@ public class Tracker
 
     string _activeScene = null;
     string _dataPath = null;
-    float _time;
+    TimeSpan _ts;
+    public int _playerID, _enemyID, _points;
     bool _exit = false;
 
     // quiza pasar por aquí algo para el tiempo:
     //      o el timestamp de unity
     //      o cero y contar desde dentro del proyecto
     //          usar epoch (usar el system time)
-    public void Init(/*aqui si tuvieramos otros tipos de persistencia, datos sobre cual usar*/)
+    public void Init(/*aqui si tuvieramos otros tipos de persistencia, datos sobre cual usar*/int playerID)
     {
         persistenceObj = new FilePersistence(new JSONSerializer());
         _dataPath = Application.persistentDataPath;
@@ -49,6 +51,19 @@ public class Tracker
         // cambiar esto a solo mandar temporizado o final del juego
         Thread t = new Thread(new ThreadStart(ThreadUpdate)); 
         t.Start();
+    }
+    public void updateEnemyID(int enemyID)
+    {
+        _enemyID = enemyID;
+    }
+    public void updatePoints(int points)
+    {
+        _points = points;
+    }
+    public int knowTime()
+    {
+        _ts = DateTime.Now - new DateTime(1970, 1, 1);
+        return (int)_ts.TotalSeconds;
     }
 
     /// </summary>
@@ -59,6 +74,7 @@ public class Tracker
         //Check scenes
         while (!_exit)
         {
+            /*
             //Open events tracking
             foreach (OpenEvent e in _openEvents) // este no pinta aquí
             {
@@ -67,7 +83,7 @@ public class Tracker
                     e._timestamp = _time;
                     _eventsToWrite.Add(e);
                 }
-            }
+            }*/
             foreach (TrackerEvent e in _eventsToWrite) // este sí
             {
                 persistenceObj.Send(e);
@@ -87,12 +103,12 @@ public class Tracker
         _exit = true;
 
         // llamar al flush para limpiar eventos que queden
-
+        /*
         foreach (ExitEvent e in _exitEvents)
         {
             e._timestamp = _time;
             persistenceObj.Send(e);
-        }
+        }*/
     }
 
     // TODO: usar llamadas de antes pero quitar el timestamp y el id

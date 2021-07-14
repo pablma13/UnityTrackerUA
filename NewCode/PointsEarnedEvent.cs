@@ -7,15 +7,16 @@ class PointsEarnedEvent : TrackerEvent
 {
     public int _points;
 
-    public PointsEarnedEvent(int playerID)
+    public PointsEarnedEvent()
     {
         _path = "PointsEarnedEvent.json";
-        Init(playerID);
+        _timestamp = Tracker.Instance.knowTime();
+        Init(Tracker.Instance._playerID);
     }
-
+    /*
     public void UpdateInfo(float timestamp, int points)
     {
         _timestamp = timestamp;
         _points = points;
-    }
+    }*/
 }
