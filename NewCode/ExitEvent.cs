@@ -5,10 +5,11 @@ using UnityEngine;
 /// </summary>
 class ExitEvent : TrackerEvent
 {
-    public ExitEvent()
+    public ExitEvent(int playerID, float timestamp): base(playerID, timestamp)
     {
+        _eventType = TrackerEventType.EXIT;
         _path = "ExitEvent.json";
-        Init(0);
+        //Init(0);
     }
 
 }

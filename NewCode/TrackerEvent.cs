@@ -8,8 +8,9 @@ using UnityEngine;
 /// </summary>
 public class TrackerEvent
 {
-    public enum TrackerEventType { KILL, OPEN, PICKUP, DIED, POINTS};
+    public enum TrackerEventType { EXIT, KILL, OPEN, PICKUP, DIED, POINTS};
 
+    public TrackerEventType _eventType;
     public float _timestamp;
     public int _playerID;
 
@@ -17,21 +18,22 @@ public class TrackerEvent
 
     public TrackerEvent() { }
 
-    public TrackerEvent(int playerID) //áñadir  timestamp y argumentos extra por cada tipo de evento
-    {
-        Init(playerID);
-    }
-
-    public virtual void Init(int playerID)
+    public TrackerEvent(int playerID, float timestamp) //áñadir  timestamp y argumentos extra por cada tipo de evento
     {
         _playerID = playerID;
-    }
-
-    // TODO: revisar luego todos los metoddos y quitar esto, meter en el constructor
-    public virtual void UpdateInfo(float timestamp)
-    {
         _timestamp = timestamp;
     }
+
+    //public virtual void Init(int playerID)
+    //{
+    //    _playerID = playerID;
+    //}
+
+    //// TODO: revisar luego todos los metoddos y quitar esto, meter en el constructor
+    //public virtual void UpdateInfo(float timestamp)
+    //{
+    //    _timestamp = timestamp;
+    //}
 
     public string GetPath()
     {

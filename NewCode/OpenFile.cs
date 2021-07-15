@@ -6,9 +6,11 @@ using UnityEngine;
 class OpenEvent : TrackerEvent
 {
     public string _startSceneName;
-    public OpenEvent()
+    public OpenEvent(int playerID, float timestamp, string startSceneName) : base(playerID, timestamp)
     {
+        _eventType = TrackerEventType.OPEN;
         _path = "OpenEvent.json";
-        Init(0);
+        _startSceneName = startSceneName;
+        //Init(0);
     }
 }

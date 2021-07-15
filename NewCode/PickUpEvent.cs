@@ -5,10 +5,11 @@ using UnityEngine;
 /// </summary>
 class PickupEvent : TrackerEvent
 {
-    public PickupEvent()
+    public PickupEvent(int playerID, float timestamp): base(playerID, timestamp)
     {
+        _eventType = TrackerEventType.PICKUP;
         _path = "PickupEvent.json";
-        _timestamp = Tracker.Instance.knowTime();
-        Init(Tracker.Instance._playerID);
+        //_timestamp = Tracker.Instance.knowTime();
+        //Init(Tracker.Instance._playerID);
     }
 }

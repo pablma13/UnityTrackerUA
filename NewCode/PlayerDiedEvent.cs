@@ -5,9 +5,10 @@ using UnityEngine;
 /// </summary>
 class PlayerDiedEvent : TrackerEvent
 {
-    public PlayerDiedEvent()
+    public PlayerDiedEvent(int playerID, float timestamp) : base(playerID, timestamp)
     {
+        _eventType = TrackerEventType.DIED;
         _path = "PlayerDiedEvent.json";
-        Init(Tracker.Instance._playerID);
+        //Init(Tracker.Instance._playerID);
     }
 }

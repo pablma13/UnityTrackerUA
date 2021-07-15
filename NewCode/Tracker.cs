@@ -24,9 +24,6 @@ public class Tracker
     #endregion
     
     List<TrackerEvent> _eventsToWrite = new List<TrackerEvent>();
-    // todos a la misma
-    List<OpenEvent> _openEvents = new List<OpenEvent>();
-    List<ExitEvent> _exitEvents = new List<ExitEvent>();
     List<AutomaticEvent> _automaticEvents = new List<AutomaticEvent>();
     
     IPersistence persistenceObj;
@@ -49,7 +46,7 @@ public class Tracker
         // semaforo para la cola para thread safety
         // aunque hebra opcional
         // cambiar esto a solo mandar temporizado o final del juego
-        Thread t = new Thread(new ThreadStart(ThreadUpdate)); 
+        Thread t = new Thread(new ThreadStart(Flush)); 
         t.Start();
     }
     public void updateEnemyID(int enemyID)
@@ -60,16 +57,21 @@ public class Tracker
     {
         _points = points;
     }
-    public int knowTime()
+    public int GetTime()
     {
         _ts = DateTime.Now - new DateTime(1970, 1, 1);
         return (int)_ts.TotalSeconds;
     }
 
+    public string GetDataPath()
+    {
+        return _dataPath;
+    }
+
     /// </summary>
     /// Update the active tracker's thread
     /// </summary>
-    private void ThreadUpdate()
+    private void Flush()
     {
         //Check scenes
         while (!_exit)
@@ -87,10 +89,10 @@ public class Tracker
             foreach (TrackerEvent e in _eventsToWrite) // este sí
             {
                 persistenceObj.Send(e);
-                if (e is OpenEvent) // no tratar de especial
-                {
-                    _openEvents.Remove((OpenEvent)e);
-                }
+                //if (e is OpenEvent) // no tratar de especial
+                //{
+                //    _openEvents.Remove((OpenEvent)e);
+                //}
             }
             _eventsToWrite.Clear();
             Thread.Sleep(10);
@@ -100,42 +102,93 @@ public class Tracker
 
     public void End()
     {
+        Flush();
         _exit = true;
-
-        // llamar al flush para limpiar eventos que queden
-        /*
-        foreach (ExitEvent e in _exitEvents)
-        {
-            e._timestamp = _time;
-            persistenceObj.Send(e);
-        }*/
     }
 
-    // TODO: usar llamadas de antes pero quitar el timestamp y el id
-
-    // añadir el timestamp y el id aqui dentro, no meterlo como argumentos en la creacion de eventos
-    public void TrackEvent(TrackerEvent.TrackerEventType eventType)
+    #region GENERIC EVENTS -----------------------------------------------------------------------------------
+    /// <summary>
+    /// Example of an Exit Event
+    /// </summary>  
+    public void ExitEventExample()
     {
-        switch (eventType)
-        {
-            case TrackerEvent.TrackerEventType.KILL:
+        //Create a new event
+        ExitEvent e = new ExitEvent(_playerID, GetTime());
 
-                break;
-            case TrackerEvent.TrackerEventType.OPEN:
-                break;
-            case TrackerEvent.TrackerEventType.PICKUP:
-                break;
-            case TrackerEvent.TrackerEventType.DIED:
-                break;
-            case TrackerEvent.TrackerEventType.POINTS:
-                break;
-            default:
-                break;
-        }
+        //Add the event to the list
+        _eventsToWrite.Add(e);
+        
     }
 
-    public string GetDataPath()
+
+    /// <summary>
+    /// Example of an OpenEvent
+    /// </summary>
+    /// <param name="sceneName">Name of the scene we are opening</param>
+    public void OpenEventExample(string sceneName)
     {
-        return _dataPath;
+        //Create a new event
+        OpenEvent e = new OpenEvent(_playerID, GetTime(), sceneName);
+
+        //Add the event to the list
+        _eventsToWrite.Add(e);
     }
+    #endregion
+
+
+    #region PROJECT-SPECIFIC EVENTS --------------------------------------------------------------------------
+    /// <summary>
+    /// Tracks the "Enemy Killed" event and parses the info
+    /// </summary>
+    /// <param name="deadPlayerID">ID of the player that was killed</param>
+    public void EnemyKill(int deadPlayerID)
+    {
+        // if the event is yet to initialize, we create a new one
+        KillEvent _killEvent = new KillEvent(_playerID, GetTime(), deadPlayerID);
+
+        // adds the event to the write list so the thread update writes them to a .json file
+        _eventsToWrite.Add(_killEvent);
+    }
+
+
+    /// <summary>
+    /// Tracks the "Pickup" event and parses the info 
+    /// </summary>
+    public void Pickup()
+    {
+        // if the event is yet to initialize, we create a new one
+        PickupEvent _pickupEvent = new PickupEvent(_playerID, GetTime());
+
+        // adds the event to the write list so the thread update writes them to a .json file
+        _eventsToWrite.Add(_pickupEvent);
+    }
+
+
+    /// <summary>
+    /// Tracks the "Player Died" event and parses the event 
+    /// </summary>
+    public void PlayerDied()
+    {
+        // if the event is yet to initialize, we create a new one
+        PlayerDiedEvent _deadEvent = new PlayerDiedEvent(_playerID, GetTime());
+
+        // adds the event to the write list so the thread update writes them to a .json file
+        _eventsToWrite.Add(_deadEvent);
+    }
+
+
+    /// <summary>
+    /// Tracks the "Points Earned" event and parses the event 
+    /// </summary>
+    /// <param name="points">Points earned by the player at the end of the match</param>
+    public void PointsEarned(int points)
+    {
+        // if the event is yet to initialize, we create a new one
+        PointsEarnedEvent _pointsEvent = new PointsEarnedEvent(_playerID, GetTime(), points);
+
+        // adds the event to the write list so the thread update writes them to a .json file
+        _eventsToWrite.Add(_pointsEvent);
+    }
+    #endregion
+
 }

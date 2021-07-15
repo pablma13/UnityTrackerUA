@@ -2,18 +2,8 @@
 public class FilePersistence : IPersistence
 {
     System.IO.StreamWriter _writer;
-    //JSONSerializer serializer = new JSONSerializer();
+    public FilePersistence(ISerializer ser) :base(ser) { }
 
-    //llamar al del padre
-    public FilePersistence(ISerializer ser)
-    {
-        IPersistence(ser);
-    }
-
-    //public override void Flush()
-    //{
-    //    throw new System.NotImplementedException();
-    //}
 
     public override void Send(TrackerEvent te)
     {
