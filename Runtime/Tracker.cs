@@ -27,36 +27,35 @@ public class Tracker
     List<AutomaticEvent> _automaticEvents = new List<AutomaticEvent>();
     
     IPersistence persistenceObj;
-    List<TrackerEvent> activeEvents;
 
-    string _activeScene = null;
     string _dataPath = null;
     TimeSpan _ts;
-    public int _playerID, _enemyID, _points;
-    bool _exit = false;
+    int _playerID;
 
     // quiza pasar por aquí algo para el tiempo:
     //      o el timestamp de unity
     //      o cero y contar desde dentro del proyecto
     //          usar epoch (usar el system time)
-    public void Init(/*aqui si tuvieramos otros tipos de persistencia, datos sobre cual usar*/int playerID)
+    public void Init(/*aqui si tuvieramos otros tipos de persistencia, datos sobre cual usar*/)
     {
         persistenceObj = new FilePersistence(new JSONSerializer());
         _dataPath = Application.persistentDataPath;
+        _playerID = 0; //Mientras no hayan varios jugadores
         // semaforo para la cola para thread safety
         // aunque hebra opcional
         // cambiar esto a solo mandar temporizado o final del juego
-        Thread t = new Thread(new ThreadStart(Flush)); 
-        t.Start();
     }
-    public void updateEnemyID(int enemyID)
+
+    public void ChangePlayerId(int playerID)
     {
-        _enemyID = enemyID;
+        _playerID = playerID;
     }
-    public void updatePoints(int points)
+
+    public int GetPlayerId()
     {
-        _points = points;
+        return _playerID;
     }
+
     public int GetTime()
     {
         _ts = DateTime.Now - new DateTime(1970, 1, 1);
@@ -73,37 +72,21 @@ public class Tracker
     /// </summary>
     private void Flush()
     {
-        //Check scenes
-        while (!_exit)
+        foreach (TrackerEvent e in _eventsToWrite) // este sí
         {
-            /*
-            //Open events tracking
-            foreach (OpenEvent e in _openEvents) // este no pinta aquí
-            {
-                if (e._startSceneName == _activeScene)
-                {
-                    e._timestamp = _time;
-                    _eventsToWrite.Add(e);
-                }
-            }*/
-            foreach (TrackerEvent e in _eventsToWrite) // este sí
-            {
-                persistenceObj.Send(e);
-                //if (e is OpenEvent) // no tratar de especial
-                //{
-                //    _openEvents.Remove((OpenEvent)e);
-                //}
-            }
-            _eventsToWrite.Clear();
-            Thread.Sleep(10);
+            persistenceObj.Send(e);
+            //if (e is OpenEvent) // no tratar de especial
+            //{
+            //    _openEvents.Remove((OpenEvent)e);
+            //}
         }
+        _eventsToWrite.Clear();
         //Exit events tracking
     }
 
     public void End()
     {
         Flush();
-        _exit = true;
     }
 
     #region GENERIC EVENTS -----------------------------------------------------------------------------------

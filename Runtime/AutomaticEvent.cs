@@ -11,9 +11,9 @@ class AutomaticEvent : TrackerEvent
 
     public virtual void Update() { }
 
-    public AutomaticEvent(int playerID)
+    public AutomaticEvent(int playerID, float timestamp) : base(playerID, timestamp)
     {
         _path = "AutomaticEvent.json";
-        Init(playerID);
+        //Init(playerID);
     }
 }

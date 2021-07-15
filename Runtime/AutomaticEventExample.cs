@@ -10,18 +10,16 @@ class AutomaticEventExample : AutomaticEvent
     private int _maxPosX = 300;
     public Vector3 _pos;
 
-    public AutomaticEventExample() { }
-
     public override void Update() 
     {
         _pos = GameObject.Find(_followedName).GetComponent<Transform>().position;
         _writePending = _pos.x > _maxPosX;
     }
 
-    public AutomaticEventExample(int playerID)
+    public AutomaticEventExample(int playerID, float timestamp) : base (playerID, timestamp)
     {
         _path = "AutomaticEvent.json";
-        Init(playerID);
+        //Init(playerID);
     }
 
     public void setFollowedObject(string followedName)

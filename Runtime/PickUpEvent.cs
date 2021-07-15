@@ -5,9 +5,9 @@ using UnityEngine;
 /// </summary>
 class PickupEvent : TrackerEvent
 {
-    public PickupEvent(int playerID)
+    public PickupEvent(int playerID, float timestamp): base(playerID, timestamp)
     {
+        _eventType = TrackerEventType.PICKUP;
         _path = "PickupEvent.json";
-        Init(playerID);
     }
 }
